@@ -372,7 +372,7 @@ const App = () => {
 
             <div className="px-5 pt-5 pb-5 mb-5 mx-5 bg-gray-100 border border-gray-300 rounded-lg">
                 <div>Genre</div>
-                <div className="grid grid-cols-3 content-start">
+                <div className="md:columns-3 columns-2">
 
                     {
                         genres.map((genre) => {
