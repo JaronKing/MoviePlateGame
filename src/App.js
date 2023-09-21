@@ -52,7 +52,7 @@ const numberMap = {
     9: "nine",
 };
 
-const processInput = (input, movies, genres) => {
+const processInput = (input, movies, movieGenres) => {
     // return new Promise((resolve) => {
         let movieData = [];
         movieData['movies'] = [];
@@ -255,15 +255,15 @@ const processInput = (input, movies, genres) => {
             return movieData;
         }
         const filteredGenres = [];
-        for (const [key, value] of Object.entries(genres)) {
-            if (value === 1) filteredGenres.push(key);
+        for (const [key, value] of Object.entries(movieGenres)) {
+            if (!value) filteredGenres.push(key);
         }
-        console.log(filteredGenres);
         const filteredMovies = movies.filter((movie) => {
-            let movieGenre = movie[2].split(',');
-            // console.log(movieGenre);
-            return movieGenre.includes(filteredGenres);
-            // story.title.toLowerCase().includes(searchTerm.toLowerCase())
+            let filterMovie = 0;
+            filteredGenres.map((genre) => {
+                if (movie[2].includes(genre)) filterMovie++;
+            });
+            return (filterMovie > 0);
         });
         movieData = searchDatabase(filteredMovies, movieData, filteredStringCombination);
         // console.log("here");
@@ -288,25 +288,25 @@ const dataStub = {
 };
 
 const genresStub = {
-    Action:0,
-    Adventure:0,
-    Animation:0,
-    Biography:0,
-    Comedy:0,
-    Crime:0,
-    Documentary:1,
-    Drama:1,
-    Family:0,
-    History:0,
-    Horror:0,
-    Music:0,
-    Musical:0,
-    Mystery:0,
-    Romance:0,
-    Sport:0,
-    Thriller:0,
-    War:0,
-    Western:0,
+    Action:false,
+    Adventure:false,
+    Animation:false,
+    Biography:false,
+    Comedy:false,
+    Crime:false,
+    Documentary:true,
+    Drama:true,
+    Family:false,
+    History:false,
+    Horror:false,
+    Music:false,
+    Musical:false,
+    Mystery:false,
+    Romance:false,
+    Sport:false,
+    Thriller:false,
+    War:false,
+    Western:false,
 };
 
 const App = () => {
@@ -345,6 +345,7 @@ const App = () => {
             ...genres,
             ...genreValue,
         }
+        console.log(booleanValue);
         setGenres(booleanValue);
     }
     // const edges = [];
@@ -369,15 +370,16 @@ const App = () => {
         // } catch {
         //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
         // }
-    }, [plate, genres]);
+    }, [plate]);
 
     React.useEffect(() => {
         handleFetchMovies();
     },[handleFetchMovies]);
 
     React.useEffect(() => {
+        setInput(input);
         dispatchMovies({ type: 'PAGE_INIT'});
-    }, [input]);
+    }, [input, genres]);
 
     return (
     <main>
