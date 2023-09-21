@@ -362,7 +362,7 @@ const App = () => {
                 return res.json();
             })
             .then((data) => {
-                const result = processInput(plate, data, genres);
+                const result = processInput(plate, data, boolean);
                 dispatchMovies({
                     type: "MOVIES_FETCH_SUCCESS",
                     payload: result,
@@ -371,7 +371,7 @@ const App = () => {
         // } catch {
         //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
         // }
-    }, [plate, genres]);
+    }, [plate, boolean]);
 
     React.useEffect(() => {
         handleFetchMovies();
