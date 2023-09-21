@@ -143,7 +143,8 @@ const processInput = (input, movies) => {
             return string.length > 3;
         }
         let filteredStringCombination = stringCombinations.filter(combinationStringMinLength);
-        countAfter = filteredStringCombination.length;
+        let combinationCount = filteredStringCombination.length;
+        movieData['stats']['combinationCount'] = combinationCount;
         // console.log(stringCombinations);
         // console.log(`Before: ${countBefore}  After:${countAfter}`);
 
@@ -432,6 +433,9 @@ const App = () => {
                     <div className="border border-gray-200">
                         <p>Most Matched Genre: { movies['data']['stats']['mostMatchedGenre'] }</p>
                         <p>With { movies['data']['stats']['mostMatchedGenreMax'] } matched</p>
+                    </div>
+                    <div className="border border-gray-200">
+                        <p>Plate Combinations: { movies['data']['stats']['combinationCount'] }</p>
                     </div>
                 </div>
 
