@@ -1,5 +1,4 @@
 import './App.css';
-import { Button } from 'flowbite-react';
 import * as React from "react"
 
 const moviesReducer = (state, action) => {
@@ -136,7 +135,7 @@ const processInput = (input, movies) => {
             }
         }
         let countAfter = stringCombinations.length;
-        // console.log(`Before: ${countBefore}  After:${countAfter}`);
+        console.log(`Before: ${countBefore}  After:${countAfter}`);
 
         //clear single letter strings
         function combinationStringMinLength(string) {
@@ -218,6 +217,7 @@ const processInput = (input, movies) => {
                                                 movieData['stats']['mostMatchedGenreMax'] = movieData['stats']['genres'][genre];
                                                 movieData['stats']['mostMatchedGenre'] = genre;
                                             }
+                                            return true;
                                         });
                                         //average rating
                                         if (movieData['stats']['averageRating'] === 0) {
@@ -322,13 +322,10 @@ const App = () => {
     }
 
     const handleGenreChange = (event) => {
-        console.log(event.target.checked);
-        console.log(event.target.defaultValue);
-        let value = event.target.defaultValue;
-        let id = `#${value}`;
-        document.getElementById(value).removeAttribute('checked');
+        // console.log(event.target.checked);
+        // console.log(event.target.defaultValue);
         // console.log(!(event.target.checked != false));
-        setBoolean(!(event.target.checked != false));
+        setBoolean(!(event.target.checked !== false));
     }
     // const edges = [];
     const handleFetchMovies = React.useCallback(async () => {
@@ -352,7 +349,7 @@ const App = () => {
         // } catch {
         //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
         // }
-    }, [plate]);
+    }, [plate, input]);
 
     React.useEffect(() => {
         handleFetchMovies();
