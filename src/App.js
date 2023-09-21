@@ -259,14 +259,7 @@ const processInput = (input, movies, movieGenres) => {
             if (value) filteredGenres.push(key);
         }
         const filteredMovies = movies.filter((movie) => {
-            // let filterMovie = 0;
             let movieG = movie[2].split(',');
-            // console.log(movieGenres);
-            // console.log(filteredGenres);
-            // console.log(movieGenres.includes(filteredGenres));
-            // console.log(movieG.some(item => filteredGenres.includes(item.toString())))
-            // console.log(`${movie[1]} - *${movieG.toString()}* ${filteredGenres.toString()}`);
-            //words.find((word) => str.includes(word))
             return !(movieG.some(item => filteredGenres.includes(item.toString())));
         });
         movieData = searchDatabase(filteredMovies, movieData, filteredStringCombination);
@@ -345,8 +338,8 @@ const App = () => {
 
     const handleGenreChange = (event) => {
         // console.log(event.target.checked);
-        console.log(event.target.defaultValue);
-        console.log(!(event.target.checked != false));
+        // console.log(event.target.defaultValue);
+        // console.log(!(event.target.checked != false));
         let genreValue = [];
         genreValue[event.target.defaultValue] = !(event.target.checked !== false);
         let booleanValue = {
