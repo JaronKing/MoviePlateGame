@@ -52,7 +52,7 @@ const numberMap = {
     9: "nine",
 };
 
-const processInput = (input, movies) => {
+const processInput = (input, movies, genres) => {
     // return new Promise((resolve) => {
         let movieData = [];
         movieData['movies'] = [];
@@ -160,7 +160,9 @@ const processInput = (input, movies) => {
             movieData['stats']['highestRating'] = 0;
             movieData['stats']['highestMovieCombinationMovie'] = [];
             movieData['stats']['highestMovieCombinationCount'] = 0;
+            movieData['stats']['moviesSearched'] = 0;
             movies.map((movie) => {
+                movieData['stats']['moviesSearched'] ++;
                 stringCombinations.map((string, index) => {
                     let stringArray = string.split("");
                     let movieTitleArray = movie[1].toLowerCase().split(" ");
@@ -252,7 +254,18 @@ const processInput = (input, movies) => {
             movieData['movies'].sort(function(a, b){return parseFloat(b[1]['matches']) - parseFloat(a[1]['matches'])});
             return movieData;
         }
-        movieData = searchDatabase(movies, movieData, filteredStringCombination);
+        const filteredGenres = [];
+        for (const [key, value] of Object.entries(genres)) {
+            if (value === 1) filteredGenres.push(key);
+        }
+        console.log(filteredGenres);
+        const filteredMovies = movies.filter((movie) => {
+            let movieGenre = movie[2].split(',');
+            // console.log(movieGenre);
+            return movieGenre.includes(filteredGenres);
+            // story.title.toLowerCase().includes(searchTerm.toLowerCase())
+        });
+        movieData = searchDatabase(filteredMovies, movieData, filteredStringCombination);
         // console.log("here");
         // console.log(movieData);
         return movieData;
@@ -268,12 +281,13 @@ const dataStub = {
         'highestRating': 0,
         'averageRating': 0,
         'combinationCount':0,
+        'moviesSearched': 0,
     },
     inputCharacterMap : [],
     movies: [],
 };
 
-const genres = {
+const genresStub = {
     Action:0,
     Adventure:0,
     Animation:0,
@@ -294,7 +308,7 @@ const genres = {
     War:0,
     Western:0,
 };
-console.log(genres);
+
 const App = () => {
 
     const [movies, dispatchMovies] = React.useReducer(
@@ -309,7 +323,7 @@ const App = () => {
 
     const [ input, setInput ] = React.useState("6YGY607");
     const [ plate, setPlate ] = React.useState('');
-    const [ boolean, setBoolean ] = React.useState(genres);
+    const [ genres, setGenres ] = React.useState(genresStub);
 
     const handleInputChange = (event) => {
         let string = event.target.value.toUpperCase();
@@ -328,10 +342,10 @@ const App = () => {
         let genreValue = [];
         genreValue[event.target.defaultValue] = !(event.target.checked !== false);
         let booleanValue = {
-            ...boolean,
+            ...genres,
             ...genreValue,
         }
-        setBoolean(booleanValue);
+        setGenres(booleanValue);
     }
     // const edges = [];
     const handleFetchMovies = React.useCallback(async () => {
@@ -346,7 +360,7 @@ const App = () => {
                 return res.json();
             })
             .then((data) => {
-                const result = processInput(plate, data);
+                const result = processInput(plate, data, genres);
                 dispatchMovies({
                     type: "MOVIES_FETCH_SUCCESS",
                     payload: result,
@@ -355,7 +369,7 @@ const App = () => {
         // } catch {
         //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
         // }
-    }, [plate, boolean]);
+    }, [plate, genres]);
 
     React.useEffect(() => {
         handleFetchMovies();
@@ -364,10 +378,6 @@ const App = () => {
     React.useEffect(() => {
         dispatchMovies({ type: 'PAGE_INIT'});
     }, [input]);
-
-    React.useEffect(() => {
-        dispatchMovies({ type: 'PAGE_INIT'});
-    }, [boolean]);
 
     return (
     <main>
@@ -390,7 +400,7 @@ const App = () => {
                             // if(parseFloat(genre) === 1) return true;
                             return (
                                 <label key={genre} htmlFor={genre} className="relative m-3 inline-flex items-center cursor-pointer">
-                                    <input id={genre} name={genre} onChange={(e) => handleGenreChange(e)} value={genre} checked={!boolean[genre]} type="checkbox" className="sr-only peer"/>
+                                    <input id={genre} name={genre} onChange={(e) => handleGenreChange(e)} value={genre} checked={!genres[genre]} type="checkbox" className="sr-only peer"/>
                                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                     <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{genre}</span>
                                 </label>
@@ -463,6 +473,9 @@ const App = () => {
                     </div>
                     <div className="border border-gray-200">
                         <p>Plate Combinations: { movies['data']['stats']['combinationCount'] }</p>
+                    </div>
+                    <div className="border border-gray-200">
+                        <p>Movies Searched: { movies['data']['stats']['moviesSearched'] }</p>
                     </div>
                 </div>
 
