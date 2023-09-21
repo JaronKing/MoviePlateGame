@@ -273,28 +273,28 @@ const dataStub = {
     movies: [],
 };
 
-const genres = [
-    'Action',
-    'Adventure',
-    'Animation',
-    'Biography',
-    'Comedy',
-    'Crime',
-    'Documentary',
-    'Drama',
-    'Family',
-    'History',
-    'Horror',
-    'Music',
-    'Musical',
-    'Mystery',
-    'Romance',
-    'Sport',
-    'Thriller',
-    'War',
-    'Western',
-];
-
+const genres = {
+    Action:0,
+    Adventure:0,
+    Animation:0,
+    Biography:0,
+    Comedy:0,
+    Crime:0,
+    Documentary:1,
+    Drama:1,
+    Family:0,
+    History:0,
+    Horror:0,
+    Music:0,
+    Musical:0,
+    Mystery:0,
+    Romance:0,
+    Sport:0,
+    Thriller:0,
+    War:0,
+    Western:0,
+};
+console.log(genres);
 const App = () => {
 
     const [movies, dispatchMovies] = React.useReducer(
@@ -309,7 +309,7 @@ const App = () => {
 
     const [ input, setInput ] = React.useState("6YGY607");
     const [ plate, setPlate ] = React.useState('');
-    const [ boolean, setBoolean ] = React.useState(1);
+    const [ boolean, setBoolean ] = React.useState(genres);
 
     const handleInputChange = (event) => {
         let string = event.target.value.toUpperCase();
@@ -323,9 +323,15 @@ const App = () => {
 
     const handleGenreChange = (event) => {
         // console.log(event.target.checked);
-        // console.log(event.target.defaultValue);
-        // console.log(!(event.target.checked != false));
-        setBoolean(!(event.target.checked !== false));
+        console.log(event.target.defaultValue);
+        console.log(!(event.target.checked != false));
+        let genreValue = [];
+        genreValue[event.target.defaultValue] = !(event.target.checked !== false);
+        let booleanValue = {
+            ...boolean,
+            ...genreValue,
+        }
+        setBoolean(booleanValue);
     }
     // const edges = [];
     const handleFetchMovies = React.useCallback(async () => {
@@ -340,7 +346,7 @@ const App = () => {
                 return res.json();
             })
             .then((data) => {
-                const result = processInput(input, data);
+                const result = processInput(plate, data);
                 dispatchMovies({
                     type: "MOVIES_FETCH_SUCCESS",
                     payload: result,
@@ -349,7 +355,7 @@ const App = () => {
         // } catch {
         //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
         // }
-    }, [plate, input]);
+    }, [plate, boolean]);
 
     React.useEffect(() => {
         handleFetchMovies();
@@ -359,6 +365,10 @@ const App = () => {
         dispatchMovies({ type: 'PAGE_INIT'});
     }, [input]);
 
+    React.useEffect(() => {
+        dispatchMovies({ type: 'PAGE_INIT'});
+    }, [boolean]);
+
     return (
     <main>
         <div className="container max-w-xl m-auto">
@@ -367,7 +377,7 @@ const App = () => {
                 <label htmlFor="large-input" className="text-center block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                     Your Car's Plate
                 </label>
-                <input type="text" value={input} onChange={handleInputChange} id="large-input" className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"/>
+                <input type="text" value={input} onChange={handleInputChange} disabled={movies.isLoading} id="large-input" className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"/>
             </div>
 
             <div className="px-5 pt-5 pb-5 mb-5 mx-5 bg-gray-100 border border-gray-300 rounded-lg">
@@ -375,11 +385,12 @@ const App = () => {
                 <div className="md:columns-3 columns-2">
 
                     {
-                        genres.map((genre) => {
-                            // let id =
+                        Object.keys(genres).map((genre, index) => {
+                            // console.log(genre);
+                            // if(parseFloat(genre) === 1) return true;
                             return (
-                                <label key={genre} for={genre} className="relative m-3 inline-flex items-center cursor-pointer">
-                                    <input id={genre} name={genre} onChange={(e) => handleGenreChange(e)} value={genre} checked={!boolean} type="checkbox" className="sr-only peer"/>
+                                <label key={genre} htmlFor={genre} className="relative m-3 inline-flex items-center cursor-pointer">
+                                    <input id={genre} name={genre} onChange={(e) => handleGenreChange(e)} value={genre} checked={!boolean[genre]} type="checkbox" className="sr-only peer"/>
                                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                     <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{genre}</span>
                                 </label>
@@ -409,11 +420,12 @@ const App = () => {
                                 <div key={index} className="bg-gray-100">
                                 {
                                     Object.entries(characterPosition).map(([index2, characters], mix) => {
-                                        if (characters === 0) return true;
+                                        if (characters === 0) return false;
+                                        if (parseFloat(index2) === 0) return false;
                                         return (
                                             Object.entries(characters).map(([index3, character], mix2) => {
                                                 if (parseFloat(character)) return true;
-                                                if (character === 0) return true;
+                                                if (index3 === 0) return true;
                                                 let characterKey = `${index3}_${character}`
                                                 return (
                                                     <div key={characterKey} className="bg-gray-100">{character}</div>
