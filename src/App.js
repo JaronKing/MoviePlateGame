@@ -274,18 +274,25 @@ const dataStub = {
 };
 
 const genres = [
+    'Action',
     'Adventure',
+    'Animation',
+    'Biography',
     'Comedy',
     'Crime',
     'Documentary',
     'Drama',
-    'Fantasy',
+    'Family',
+    'History',
     'Horror',
     'Music',
+    'Musical',
     'Mystery',
     'Romance',
-    'Sci-Fi',
+    'Sport',
     'Thriller',
+    'War',
+    'Western',
 ];
 
 const App = () => {
@@ -302,6 +309,7 @@ const App = () => {
 
     const [ input, setInput ] = React.useState("6YGY607");
     const [ plate, setPlate ] = React.useState('');
+    const [ boolean, setBoolean ] = React.useState(1);
 
     const handleInputChange = (event) => {
         let string = event.target.value.toUpperCase();
@@ -311,6 +319,16 @@ const App = () => {
     const handleSeachSubmit = (event) => {
         console.log(`${input} submitted`);
         setPlate(input);
+    }
+
+    const handleGenreChange = (event) => {
+        console.log(event.target.checked);
+        console.log(event.target.defaultValue);
+        let value = event.target.defaultValue;
+        let id = `#${value}`;
+        document.getElementById(value).removeAttribute('checked');
+        // console.log(!(event.target.checked != false));
+        setBoolean(!(event.target.checked != false));
     }
     // const edges = [];
     const handleFetchMovies = React.useCallback(async () => {
@@ -355,7 +373,7 @@ const App = () => {
                 <input type="text" value={input} onChange={handleInputChange} id="large-input" className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"/>
             </div>
 
-            <div className=" px-5 mb-5 bg-gray-100 pt-5 pb-5 mb-5 border border-gray-300 rounded-lg">
+            <div className="px-5 pt-5 pb-5 mb-5 mx-5 bg-gray-100 border border-gray-300 rounded-lg">
                 <div>Genre</div>
                 <div className="grid grid-cols-3 content-start">
 
@@ -363,8 +381,8 @@ const App = () => {
                         genres.map((genre) => {
                             // let id =
                             return (
-                                <label key={genre} className="relative m-3 inline-flex items-center cursor-pointer">
-                                    <input id={genre} type="checkbox" value="" checked={true} className="sr-only peer"/>
+                                <label key={genre} for={genre} className="relative m-3 inline-flex items-center cursor-pointer">
+                                    <input id={genre} name={genre} onChange={(e) => handleGenreChange(e)} value={genre} checked={!boolean} type="checkbox" className="sr-only peer"/>
                                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                     <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{genre}</span>
                                 </label>
