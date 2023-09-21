@@ -256,14 +256,18 @@ const processInput = (input, movies, movieGenres) => {
         }
         const filteredGenres = [];
         for (const [key, value] of Object.entries(movieGenres)) {
-            if (!value) filteredGenres.push(key);
+            if (value) filteredGenres.push(key);
         }
         const filteredMovies = movies.filter((movie) => {
-            let filterMovie = 0;
-            filteredGenres.map((genre) => {
-                if (movie[2].includes(genre)) filterMovie++;
-            });
-            return (filterMovie > 0);
+            // let filterMovie = 0;
+            let movieG = movie[2].split(',');
+            // console.log(movieGenres);
+            // console.log(filteredGenres);
+            // console.log(movieGenres.includes(filteredGenres));
+            // console.log(movieG.some(item => filteredGenres.includes(item.toString())))
+            // console.log(`${movie[1]} - *${movieG.toString()}* ${filteredGenres.toString()}`);
+            //words.find((word) => str.includes(word))
+            return !(movieG.some(item => filteredGenres.includes(item.toString())));
         });
         movieData = searchDatabase(filteredMovies, movieData, filteredStringCombination);
         // console.log("here");
@@ -294,8 +298,8 @@ const genresStub = {
     Biography:false,
     Comedy:false,
     Crime:false,
-    Documentary:true,
-    Drama:true,
+    Documentary:false,
+    Drama:false,
     Family:false,
     History:false,
     Horror:false,
@@ -303,10 +307,12 @@ const genresStub = {
     Musical:false,
     Mystery:false,
     Romance:false,
+    'Sci-Fi':false,
     Sport:false,
     Thriller:false,
     War:false,
     Western:false,
+    '\\N': false,
 };
 
 const App = () => {
@@ -324,6 +330,7 @@ const App = () => {
     const [ input, setInput ] = React.useState("6YGY607");
     const [ plate, setPlate ] = React.useState('');
     const [ genres, setGenres ] = React.useState(genresStub);
+    const [ boolean, setBoolean ] = React.useState([]);
 
     const handleInputChange = (event) => {
         let string = event.target.value.toUpperCase();
@@ -332,6 +339,7 @@ const App = () => {
 
     const handleSeachSubmit = (event) => {
         console.log(`${input} submitted`);
+        setBoolean(genres);
         setPlate(input);
     }
 
@@ -370,16 +378,15 @@ const App = () => {
         // } catch {
         //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
         // }
-    }, [plate]);
+    }, [plate, boolean]);
 
     React.useEffect(() => {
         handleFetchMovies();
     },[handleFetchMovies]);
 
-    React.useEffect(() => {
-        setInput(input);
-        dispatchMovies({ type: 'PAGE_INIT'});
-    }, [input, genres]);
+    // React.useEffect(() => {
+    //     dispatchMovies({ type: 'PAGE_INIT'});
+    // }, [input]);
 
     return (
     <main>
