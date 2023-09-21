@@ -371,7 +371,7 @@ const App = () => {
         // } catch {
         //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
         // }
-    }, [plate, boolean]);
+    }, [plate, genres]);
 
     React.useEffect(() => {
         handleFetchMovies();
