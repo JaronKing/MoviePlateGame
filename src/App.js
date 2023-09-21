@@ -1,5 +1,5 @@
 import './App.css';
-
+import { Button } from 'flowbite-react';
 import * as React from "react"
 
 const moviesReducer = (state, action) => {
@@ -59,7 +59,7 @@ const processInput = (input, movies) => {
         movieData['movies'] = [];
         movieData['stats'] = [];
 
-        console.log(movieData);
+        // console.log(movieData);
         //Create an array matrix of characters based on input (numbers into word)
         let inputCharacterMap = [];
         for (let i = 0; i < input.length; i++) {
@@ -136,7 +136,7 @@ const processInput = (input, movies) => {
             }
         }
         let countAfter = stringCombinations.length;
-        console.log(`Before: ${countBefore}  After:${countAfter}`);
+        // console.log(`Before: ${countBefore}  After:${countAfter}`);
 
         //clear single letter strings
         function combinationStringMinLength(string) {
@@ -145,19 +145,23 @@ const processInput = (input, movies) => {
         let filteredStringCombination = stringCombinations.filter(combinationStringMinLength);
         countAfter = filteredStringCombination.length;
         // console.log(stringCombinations);
-        console.log(`Before: ${countBefore}  After:${countAfter}`);
+        // console.log(`Before: ${countBefore}  After:${countAfter}`);
 
         // Search database given string
         function searchDatabase(movies, movieData, stringCombinations) {
-            console.log("search db");
+            // console.log("search db");
             movieData['stats']['combinationCount'] = stringCombinations.length;
             // get genre count
+            movieData['stats']['genres'] = [];
             movieData['stats']['mostMatchedGenre'] = '';
+            movieData['stats']['mostMatchedGenreMax'] = 0;
             movieData['stats']['movieCount'] = 0;
             movieData['stats']['averageRating'] = 0;
+            movieData['stats']['highestRating'] = 0;
+            movieData['stats']['highestMovieCombinationMovie'] = [];
+            movieData['stats']['highestMovieCombinationCount'] = 0;
             movies.map((movie) => {
                 stringCombinations.map((string, index) => {
-                    // console.log('gets here1');
                     let stringArray = string.split("");
                     let movieTitleArray = movie[1].toLowerCase().split(" ");
                     //check if string array to big, if so skip
@@ -200,7 +204,20 @@ const processInput = (input, movies) => {
                                         movieToPush['matchMax'] = string.length;
                                         movieData['movies'][movie[0]] = movieToPush;
 
-
+                                        //genres
+                                        let genres = movieToPush[2].split(',');
+                                        // console.log(genres);
+                                        genres.map((genre) => {
+                                            if (movieData['stats']['genres'][genre] !== undefined) {
+                                                movieData['stats']['genres'][genre] ++;
+                                            } else {
+                                                movieData['stats']['genres'][genre] = 1;
+                                            }
+                                            if (movieData['stats']['genres'][genre] > movieData['stats']['mostMatchedGenreMax']) {
+                                                movieData['stats']['mostMatchedGenreMax'] = movieData['stats']['genres'][genre];
+                                                movieData['stats']['mostMatchedGenre'] = genre;
+                                            }
+                                        });
                                         //average rating
                                         if (movieData['stats']['averageRating'] === 0) {
                                             movieData['stats']['averageRating'] = parseFloat(movieToPush[3]);
@@ -227,31 +244,48 @@ const processInput = (input, movies) => {
                 });
                 return true;
             });
-            console.log(movieData);
+
+            //round rating
+            console.log(movieData['stats']['genres']);
             movieData['stats']['averageRating'] = movieData['stats']['averageRating'].toFixed(1);
             movieData['movies'].sort(function(a, b){return parseFloat(b[1]['matches']) - parseFloat(a[1]['matches'])});
             return movieData;
         }
         movieData = searchDatabase(movies, movieData, filteredStringCombination);
-        console.log("here");
-        console.log(movieData);
+        // console.log("here");
+        // console.log(movieData);
         return movieData;
     // });
 }
 
 const dataStub = {
-        stats: {
-            'movieCount': 0,
-            'highestMovieCombinationCount': 0,
-            'highestMovieCombinationMovie': [],
-            'highestStringMatchCount': 0,
-            'highestRating': 0,
-            'averageRating': 0,
-            'combinationCount':0,
-        },
-        inputCharacterMap : [],
-        movies: [],
-    };
+    stats: {
+        'movieCount': 0,
+        'highestMovieCombinationCount': 0,
+        'highestMovieCombinationMovie': [],
+        'highestStringMatchCount': 0,
+        'highestRating': 0,
+        'averageRating': 0,
+        'combinationCount':0,
+    },
+    inputCharacterMap : [],
+    movies: [],
+};
+
+const genres = [
+    'Adventure',
+    'Comedy',
+    'Crime',
+    'Documentary',
+    'Drama',
+    'Fantasy',
+    'Horror',
+    'Music',
+    'Mystery',
+    'Romance',
+    'Sci-Fi',
+    'Thriller',
+];
 
 const App = () => {
 
@@ -280,10 +314,11 @@ const App = () => {
     // const edges = [];
     const handleFetchMovies = React.useCallback(async () => {
         if (!plate) return;
-        if (plate.length < 7) return;
+        // if (plate.length() < 7) return;
+
         dispatchMovies({ type: "MOVIES_FETCH_INIT"});
 
-        try{
+        // try{
             await fetch("./movies.json")
             .then((res) => {
                 return res.json();
@@ -295,22 +330,18 @@ const App = () => {
                     payload: result,
                 });
             });
-        } catch {
-            dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
-        }
-    }, [plate, input]);
+        // } catch {
+        //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
+        // }
+    }, [plate]);
 
     React.useEffect(() => {
         handleFetchMovies();
     },[handleFetchMovies]);
 
     React.useEffect(() => {
-        console.log(movies.isLoading);
-        // console.log(movies.data);
-        // console.log(typeof movies.data.inputCharacterMap[0]);
-
-    }, [movies]);
-
+        dispatchMovies({ type: 'PAGE_INIT'});
+    }, [input]);
 
     return (
     <main>
@@ -321,6 +352,25 @@ const App = () => {
                     Your Car's Plate
                 </label>
                 <input type="text" value={input} onChange={handleInputChange} id="large-input" className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"/>
+            </div>
+
+            <div className=" px-5 mb-5 bg-gray-100 pt-5 pb-5 mb-5 border border-gray-300 rounded-lg">
+                <div>Genre</div>
+                <div className="grid grid-cols-3 content-start">
+
+                    {
+                        genres.map((genre) => {
+                            // let id =
+                            return (
+                                <label key={genre} className="relative m-3 inline-flex items-center cursor-pointer">
+                                    <input id={genre} type="checkbox" value="" checked={true} className="sr-only peer"/>
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                    <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{genre}</span>
+                                </label>
+                            )
+                        })
+                    }
+                </div>
             </div>
 
             <div className="flex flex-col items-center justify-center px-5 mb-5">
@@ -343,10 +393,11 @@ const App = () => {
                                 <div key={index} className="bg-gray-100">
                                 {
                                     Object.entries(characterPosition).map(([index2, characters], mix) => {
-                                        if (index2 === 0) return true;
+                                        if (characters === 0) return true;
                                         return (
                                             Object.entries(characters).map(([index3, character], mix2) => {
-                                                if (index2 === 0) return true;
+                                                if (parseFloat(character)) return true;
+                                                if (character === 0) return true;
                                                 let characterKey = `${index3}_${character}`
                                                 return (
                                                     <div key={characterKey} className="bg-gray-100">{character}</div>
@@ -363,20 +414,24 @@ const App = () => {
 
 
                 <div className="flex-row grid grid-cols-2 p-5 bg-gray-100 border border-gray-300 rounded-lg">
-                    <div>
+                    <div className="border border-gray-200 rounded-lg">
                         Movies Matched: { movies.data.stats.movieCount }
                     </div>
-                    <div>
+                    <div className="border border-gray-200">
                         Plate Combinations Matched: { movies.data.stats.combinationCount }
                     </div>
-                    <div>
+                    <div className="border border-gray-200">
                         Average Rating: { movies.data.stats.averageRating }
                     </div>
-                    <div>
-                        Highest Rating: { movies.data.stats.averageRating }
+                    <div className="border border-gray-200">
+                        Highest Rating: { movies.data.stats.highestRating }
                     </div>
-                    <div>
-                        Most Matched Movie: { movies.data.stats.averageRating }
+                    <div className="border border-gray-200">
+                        Most Matched Movie: { movies['data']['stats']['highestMovieCombinationMovie'][1] }
+                    </div>
+                    <div className="border border-gray-200">
+                        <p>Most Matched Genre: { movies['data']['stats']['mostMatchedGenre'] }</p>
+                        <p>With { movies['data']['stats']['mostMatchedGenreMax'] } matched</p>
                     </div>
                 </div>
 
