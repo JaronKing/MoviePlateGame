@@ -287,6 +287,7 @@ const dataStub = {
 const genresStub = {
     Action:false,
     Adventure:false,
+    Adult:true,
     Animation:false,
     Biography:false,
     Comedy:false,
