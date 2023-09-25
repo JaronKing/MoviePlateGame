@@ -66,7 +66,7 @@ const numberMap = {
     9: "nine",
 };
 
-const processInput = (input, movies, movieGenres, dispatchMovies) => {
+const processCombinationsOfPlate = async (input, movies, movieGenres, dispatchMovies) => {
     return new Promise((resolve) => {
         let movieData = [];
         movieData['movies'] = [];
@@ -158,13 +158,28 @@ const processInput = (input, movies, movieGenres, dispatchMovies) => {
             return string.length > 3;
         }
         let filteredStringCombination = stringCombinations.filter(combinationStringMinLength);
+
+
+
+
         let combinationCount = filteredStringCombination.length;
         movieData['stats']['combinationCount'] = combinationCount;
-        // console.log(`Before: ${countBefore}  After:${countAfter}`);
+        console.log(`1Before: ${countBefore}  After:${countAfter}`);
+        movieData['stats']['filteredStringCombination'] = filteredStringCombination;
+
+        resolve(movieData);
+    })
+}
+
+const processInput = (input, movies, movieGenres, dispatchMovies, movieData) => {
+    return new Promise((resolve) => {
+
+
 
         // Search database given string
-        function searchDatabase(movies, movieData, stringCombinations) {
+        async function searchDatabase(movies, movieData, stringCombinations) {
             // console.log("search db");
+            const sleep = m => new Promise(r => setTimeout(r, m));
             movieData['stats']['combinationCount'] = stringCombinations.length;
             // get genre count
             movieData['stats']['genres'] = [];
@@ -176,7 +191,7 @@ const processInput = (input, movies, movieGenres, dispatchMovies) => {
             movieData['stats']['highestMovieCombinationMovie'] = [];
             movieData['stats']['highestMovieCombinationCount'] = 0;
             movieData['stats']['moviesSearched'] = 0;
-            movies.map((movie) => {
+            await Promise.all(movies.map(async (movie, movieIndex) => {
                 movieData['stats']['moviesSearched'] ++;
                 stringCombinations.map((string, index) => {
                     let stringArray = string.split("");
@@ -260,8 +275,9 @@ const processInput = (input, movies, movieGenres, dispatchMovies) => {
                     }
                     return true;
                 });
+                await sleep(2000);
                 return true;
-            });
+            }));
 
             //round rating
             console.log(movieData['stats']['genres']);
@@ -279,7 +295,7 @@ const processInput = (input, movies, movieGenres, dispatchMovies) => {
         });
 
         dispatchMovies({ type: "MOVIES_GENERATED_SEARCHING"});
-        movieData = searchDatabase(filteredMovies, movieData, filteredStringCombination);
+        movieData = searchDatabase(filteredMovies, movieData, movieData['stats']['filteredStringCombination']);
 
         // console.log("here");
         // console.log(movieData);
@@ -387,24 +403,29 @@ const App = () => {
         if (!plate) return;
         if (plate.length < 7) return;
 
-        dispatchMovies({ type: "MOVIES_FETCH_INIT"});
-        // try{
+        await dispatchMovies({ type: "MOVIES_FETCH_INIT"});
+        try{
             await fetch("./movies.json")
             .then((res) => {
                 return res.json();
             })
             .then((data) => {
-                processInput(plate, data, boolean, dispatchMovies)
-                .then((result) => {
-                    dispatchMovies({
-                        type: "MOVIES_FETCH_SUCCESS",
-                        payload: result,
+                processCombinationsOfPlate(plate, data, boolean, dispatchMovies)
+                .then((movieData) => {
+                    processInput(plate, data, boolean, dispatchMovies, movieData)
+                    .then((result) => {
+                        dispatchMovies({
+                            type: "MOVIES_FETCH_SUCCESS",
+                            payload: result,
+                        });
                     });
                 });
+
+
             });
-        // } catch {
-        //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
-        // }
+        } catch {
+            dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
+        }
     }, [plate, boolean]);
 
     React.useEffect(() => {
