@@ -456,7 +456,7 @@ const App = () => {
             </div>
         ) : (
             <div className="flex flex-col items-center justify-center px-5 mb-5">
-                <button type="submit" onClick={handleSeachSubmit} disabled={movies.isLoading} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium shadow-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                <button type="submit" onClick={handleSeachSubmit} disabled={movies.isLoading} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium shadow-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 shadow-lg">Submit</button>
             </div>
         )}
         {movies.isError && (
@@ -466,7 +466,7 @@ const App = () => {
             <p></p>
         ) : (
             <div className="mx-5">
-                <div className="grid grid-cols-7 text-center content-start bg-white pt-5 pb-5 mb-5 border border-gray-300 uppercase shadow-lg">
+                <div className="grid grid-cols-7 text-center content-start bg-white pt-5 pb-5 mb-5 uppercase shadow-lg border border-gray-300 ">
                     {
                         Object.entries(movies.data.inputCharacterMap || {}).map((characterPosition, index) => {
                             return (
@@ -494,30 +494,30 @@ const App = () => {
                 </div>
 
                 <div className="flex-row grid grid-cols-2 p-5 bg-white border border-gray-300 shadow-lg">
-                    <div className="border border-gray-200">
+                    <div className="">
                         Movies Matched: { movies.data.stats.movieCount }
 
                     </div>
-                    <div className="border border-gray-200">
+                    <div className="">
                         Plate Combinations Matched: { movies.data.stats.combinationCount }
                     </div>
-                    <div className="border border-gray-200">
+                    <div className="">
                         Average Rating: { movies.data.stats.averageRating }
                     </div>
-                    <div className="border border-gray-200">
+                    <div className="">
                         Highest Rating: { movies.data.stats.highestRating }
                     </div>
-                    <div className="border border-gray-200">
+                    <div className="">
                         Most Matched Movie: { movies['data']['stats']['highestMovieCombinationMovie'][1] }
                     </div>
-                    <div className="border border-gray-200">
+                    <div className="">
                         <p>Most Matched Genre: { movies['data']['stats']['mostMatchedGenre'] }</p>
                         <p>With { movies['data']['stats']['mostMatchedGenreMax'] } matched</p>
                     </div>
-                    <div className="border border-gray-200">
+                    <div className="">
                         <p>Plate Combinations: { movies['data']['stats']['combinationCount'] }</p>
                     </div>
-                    <div className="border border-gray-200">
+                    <div className="">
                         <p>Movies Searched: { movies['data']['stats']['moviesSearched'] }</p>
                     </div>
                 </div>
@@ -531,7 +531,7 @@ const App = () => {
                         Object.entries(movies.data.movies || {}).map((movie, index) => {
                             return (
                                 <div key={index} className="mb-5 p-5 bg-white shadow-lg border border-gray-300">
-                                    <div className="p-5">{movie[1][1]}</div>
+                                    <div className="px-5">{movie[1][1]}</div>
                                     <div className="px-5">Genre: {movie[1][2]}</div>
                                     <div className="px-5">Rating: {movie[1][3]}</div>
                                     <div className="px-5">Matches: {movie[1]['matches']}</div>
