@@ -48,6 +48,16 @@ const moviesReducer = (state, action) => {
                 ...state,
                 loadMessage: 'Searching Movies for matches',
             };
+        case 'MOVIES_GENRE_FILTERED':
+            return {
+                ...state,
+                loadMessage: 'Filtering Movies Genres',
+            };
+        case 'MOVIES_GENERATE_STATS':
+            return {
+                ...state,
+                loadMessage: 'Generating Stats',
+            };
         default:
             throw new Error();
     }
@@ -66,13 +76,16 @@ const numberMap = {
     9: "nine",
 };
 
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
+
 const processCombinationsOfPlate = async (input, movies, movieGenres, dispatchMovies) => {
-    return new Promise((resolve) => {
+    // return new Promise((resolve) => {
         let movieData = [];
         movieData['movies'] = [];
         movieData['stats'] = [];
 
         dispatchMovies({ type: "MOVIES_GENERATED_STRINGS"});
+        await sleep(100);
         // console.log(stringCombinations);
         // console.log(movieData);
         //Create an array matrix of characters based on input (numbers into word)
@@ -94,7 +107,7 @@ const processCombinationsOfPlate = async (input, movies, movieGenres, dispatchMo
             inputCharacterMap.push(varToPush);
         }
         // console.log(inputCharacterMap);
-
+        await sleep(100);
         let possibleStrings = (characterMap) => {
             let combinations = [];
             for (let b = 0; b < characterMap[0].length; b++){
@@ -164,22 +177,23 @@ const processCombinationsOfPlate = async (input, movies, movieGenres, dispatchMo
 
         let combinationCount = filteredStringCombination.length;
         movieData['stats']['combinationCount'] = combinationCount;
-        console.log(`1Before: ${countBefore}  After:${countAfter}`);
+        console.log(`1Before: ${countAfter}  After:${combinationCount}`);
         movieData['stats']['filteredStringCombination'] = filteredStringCombination;
-
-        resolve(movieData);
-    })
+        await sleep(100);
+        // resolve(movieData);
+        return movieData;
+    // })
 }
 
-const processInput = (input, movies, movieGenres, dispatchMovies, movieData) => {
-    return new Promise((resolve) => {
+const processInput = async (input, movies, movieGenres, dispatchMovies, movieData) => {
+    // return new Promise((resolve) => {
 
 
 
         // Search database given string
         async function searchDatabase(movies, movieData, stringCombinations) {
             // console.log("search db");
-            const sleep = m => new Promise(r => setTimeout(r, m));
+            // const sleep = m => new Promise(r => setTimeout(r, m));
             movieData['stats']['combinationCount'] = stringCombinations.length;
             // get genre count
             movieData['stats']['genres'] = [];
@@ -193,7 +207,7 @@ const processInput = (input, movies, movieGenres, dispatchMovies, movieData) => 
             movieData['stats']['moviesSearched'] = 0;
             await Promise.all(movies.map(async (movie, movieIndex) => {
                 movieData['stats']['moviesSearched'] ++;
-                stringCombinations.map((string, index) => {
+                await Promise.all(stringCombinations.map(async (string, index) => {
                     let stringArray = string.split("");
                     let movieTitleArray = movie[1].toLowerCase().split(" ");
                     //check if string array to big, if so skip
@@ -207,7 +221,8 @@ const processInput = (input, movies, movieGenres, dispatchMovies, movieData) => 
                     let arrayDiference = movieTitleArray.length - stringArray.length;
                     for(let a = 0; a <= arrayDiference; a++) {
                         let wordMatchCount = 0;
-                        for(let c = 0; c < stringArray.length; c++) {
+                        let combinationLength = stringArray.length;
+                        for(let c = 0; c < combinationLength; c++) {
 
                             let movieWordPosition = a + c;
                             //check if title has a matching word
@@ -216,92 +231,110 @@ const processInput = (input, movies, movieGenres, dispatchMovies, movieData) => 
                                 if (wordMatchCount === stringArray.length) {
                                     if (movieData['movies'][movie[0]] !== undefined) {
                                         movieData['movies'][movie[0]]['matches'] ++;
-
-                                        //highest combinations found for one movie
-                                        if (movieData['stats']['highestMovieCombinationCount'] < movieData['movies'][movie[0]]['matches']) {
-                                            movieData['stats']['highestMovieCombinationCount'] = movieData['movies'][movie[0]]['matches'];
-                                            movieData['stats']['highestMovieCombinationMovie'] = movieData['movies'][movie[0]];
-                                        }
-
                                         if(movieData['movies'][movie[0]]['matchMax'] < string.length){
                                             movieData['movies'][movie[0]]['matchMax'] = string.length;
                                         }
                                         movieData['movies'][movie[0]]['matchedString'].push(string);
                                     } else {
                                         let movieToPush = movie;
-                                        movieData['stats']['movieCount'] ++;
                                         movieToPush['matchedString'] = [];
                                         movieToPush['matches'] = 1;
                                         movieToPush['matchedString'].push(string);
                                         movieToPush['matchMax'] = string.length;
                                         movieData['movies'][movie[0]] = movieToPush;
-
-                                        //genres
-                                        let genres = movieToPush[2].split(',');
-                                        // console.log(genres);
-                                        genres.map((genre) => {
-                                            if (movieData['stats']['genres'][genre] !== undefined) {
-                                                movieData['stats']['genres'][genre] ++;
-                                            } else {
-                                                movieData['stats']['genres'][genre] = 1;
-                                            }
-                                            if (movieData['stats']['genres'][genre] > movieData['stats']['mostMatchedGenreMax']) {
-                                                movieData['stats']['mostMatchedGenreMax'] = movieData['stats']['genres'][genre];
-                                                movieData['stats']['mostMatchedGenre'] = genre;
-                                            }
-                                            return true;
-                                        });
-                                        //average rating
-                                        if (movieData['stats']['averageRating'] === 0) {
-                                            movieData['stats']['averageRating'] = parseFloat(movieToPush[3]);
-                                        } else {
-                                            movieData['stats']['averageRating'] = (movieData['stats']['averageRating'] + parseFloat(movieToPush[3])) / 2;
-                                        }
-
-                                        // highest rating
-                                        if(movieData['stats']['highestRating'] < parseFloat(movieToPush[3])) {
-                                            movieData['stats']['highestRating'] = parseFloat(movieToPush[3]);
-                                        }
-                                    }
-                                    // stats
-                                    if (movieData['stats']['highestStringMatchCount'] < string.length) {
-                                        movieData['stats']['highestStringMatchCount'] = string.length;
                                     }
                                 }
+                                await sleep(1);
                             } else {
-                                continue;
+                                break;
                             }
+                            await sleep(1);
                         }
                     }
+                    await sleep(1);
                     return true;
-                });
-                await sleep(2000);
+                }));
+                await sleep(100);
                 return true;
             }));
 
             //round rating
-            console.log(movieData['stats']['genres']);
-            movieData['stats']['averageRating'] = movieData['stats']['averageRating'].toFixed(1);
-            movieData['movies'].sort(function(a, b){return parseFloat(b[1]['matches']) - parseFloat(a[1]['matches'])});
+            // console.log(movieData['stats']['genres']);
+            // movieData['movies'].sort(function(a, b){return parseFloat(b[1]['matches']) - parseFloat(a[1]['matches'])});
             return movieData;
         }
         const filteredGenres = [];
         for (const [key, value] of Object.entries(movieGenres)) {
             if (value) filteredGenres.push(key);
         }
-        const filteredMovies = movies.filter((movie) => {
+        dispatchMovies({ type: "MOVIES_GENRE_FILTERED"});
+        await sleep(100);
+        const filteredMovies = movies.filter((movie, index) => {
             let movieG = movie[2].split(',');
             return !(movieG.some(item => filteredGenres.includes(item.toString())));
         });
 
         dispatchMovies({ type: "MOVIES_GENERATED_SEARCHING"});
-        movieData = searchDatabase(filteredMovies, movieData, movieData['stats']['filteredStringCombination']);
+        await sleep(100);
+        movieData = await searchDatabase(filteredMovies, movieData, movieData['stats']['filteredStringCombination']);
+
+        async function getMatchStats(movieData) {
+
+            for (const property in movieData['movies']) {
+                // highest rating
+                if(movieData['stats']['highestRating'] < parseFloat(movieData['movies'][property][3])) {
+                    movieData['stats']['highestRating'] = parseFloat(movieData['movies'][property][3]);
+                }
+
+                //average rating
+                if (movieData['stats']['averageRating'] === 0) {
+                    movieData['stats']['averageRating'] = parseFloat(movieData['movies'][property][3]);
+                } else {
+                    movieData['stats']['averageRating'] = (movieData['stats']['averageRating'] + parseFloat(movieData['movies'][property][3])) / 2;
+                }
+
+                //genre rating
+                let genres = movieData['movies'][property][2].split(',');
+                genres.map((genre) => {
+                    if (movieData['stats']['genres'][genre] !== undefined) {
+                        movieData['stats']['genres'][genre] ++;
+                    } else {
+                        movieData['stats']['genres'][genre] = 1;
+                    }
+                    if (movieData['stats']['genres'][genre] > movieData['stats']['mostMatchedGenreMax']) {
+                        movieData['stats']['mostMatchedGenreMax'] = movieData['stats']['genres'][genre];
+                        movieData['stats']['mostMatchedGenre'] = genre;
+                    }
+                });
+
+                //movie count
+                movieData['stats']['movieCount'] ++;
+
+                //highest combinations found for one movie
+                if (movieData['stats']['highestMovieCombinationCount'] < movieData['movies'][property]['matches']) {
+                    movieData['stats']['highestMovieCombinationCount'] = movieData['movies'][property]['matches'];
+                    movieData['stats']['highestMovieCombinationMovie'] = movieData['movies'][property];
+                }
+
+                //longest match found
+                if (movieData['stats']['highestStringMatchCount'] < movieData['movies'][property]['matchMax']) {
+                    movieData['stats']['highestStringMatchCount'] = movieData['movies'][property]['matchMax'];
+                }
+                await sleep(1);
+            }
+            movieData['stats']['averageRating'] = movieData['stats']['averageRating'].toFixed(1);
+            return movieData;
+        }
+
+        dispatchMovies({ type: "MOVIES_GENERATE_STATS"});
+        await sleep(1000);
+        movieData = getMatchStats(movieData);
 
         // console.log("here");
         // console.log(movieData);
-        // return movieData;
-        resolve(movieData);
-    });
+        return movieData;
+        // resolve(movieData);
+    // });
 }
 
 const dataStub = {
@@ -409,19 +442,15 @@ const App = () => {
             .then((res) => {
                 return res.json();
             })
-            .then((data) => {
-                processCombinationsOfPlate(plate, data, boolean, dispatchMovies)
-                .then((movieData) => {
-                    processInput(plate, data, boolean, dispatchMovies, movieData)
-                    .then((result) => {
-                        dispatchMovies({
-                            type: "MOVIES_FETCH_SUCCESS",
-                            payload: result,
-                        });
+            .then(async (data) => {
+                let movieData = await processCombinationsOfPlate(plate, data, boolean, dispatchMovies)
+                let result = await processInput(plate, data, boolean, dispatchMovies, movieData)
+                // .then((result) => {
+                    dispatchMovies({
+                        type: "MOVIES_FETCH_SUCCESS",
+                        payload: result,
                     });
-                });
-
-
+                // });
             });
         } catch {
             dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
