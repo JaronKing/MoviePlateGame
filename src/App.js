@@ -10,7 +10,8 @@ const moviesReducer = (state, action) => {
                 isLoading: false,
                 isError: false,
                 isInit: true,
-                data: { ...dataStub }
+                data: { ...dataStub },
+                loadMessage: 'Searching...',
             }
         case 'MOVIES_FETCH_INIT':
             return {
@@ -35,6 +36,16 @@ const moviesReducer = (state, action) => {
                 isError: true,
                 isInit: true,
             };
+        case 'MOVIES_GENERATED_STRINGS':
+            return {
+                ...state,
+                loadMessage: 'Generated Plate Combinations',
+            };
+        case 'MOVIES_GENERATED_SEARCHING':
+            return {
+                ...state,
+                loadMessage: 'Searching Movies for matches',
+            };
         default:
             throw new Error();
     }
@@ -53,12 +64,14 @@ const numberMap = {
     9: "nine",
 };
 
-const processInput = (input, movies, movieGenres) => {
+const processInput = (input, movies, movieGenres, dispatchMovies) => {
     return new Promise((resolve) => {
         let movieData = [];
         movieData['movies'] = [];
         movieData['stats'] = [];
 
+        dispatchMovies({ type: "MOVIES_GENERATED_STRINGS"});
+        // console.log(stringCombinations);
         // console.log(movieData);
         //Create an array matrix of characters based on input (numbers into word)
         let inputCharacterMap = [];
@@ -145,7 +158,6 @@ const processInput = (input, movies, movieGenres) => {
         let filteredStringCombination = stringCombinations.filter(combinationStringMinLength);
         let combinationCount = filteredStringCombination.length;
         movieData['stats']['combinationCount'] = combinationCount;
-        // console.log(stringCombinations);
         // console.log(`Before: ${countBefore}  After:${countAfter}`);
 
         // Search database given string
@@ -263,9 +275,12 @@ const processInput = (input, movies, movieGenres) => {
             let movieG = movie[2].split(',');
             return !(movieG.some(item => filteredGenres.includes(item.toString())));
         });
+
+        dispatchMovies({ type: "MOVIES_GENERATED_SEARCHING"});
         movieData = searchDatabase(filteredMovies, movieData, filteredStringCombination);
+
         // console.log("here");
-        console.log(movieData);
+        // console.log(movieData);
         // return movieData;
         resolve(movieData);
     });
@@ -371,20 +386,19 @@ const App = () => {
         if (plate.length < 7) return;
 
         dispatchMovies({ type: "MOVIES_FETCH_INIT"});
-
         // try{
             await fetch("./movies.json")
             .then((res) => {
                 return res.json();
             })
             .then((data) => {
-                processInput(plate, data, boolean)
-                    .then((result) => {
-                        dispatchMovies({
-                            type: "MOVIES_FETCH_SUCCESS",
-                            payload: result,
-                        });
+                processInput(plate, data, boolean, dispatchMovies)
+                .then((result) => {
+                    dispatchMovies({
+                        type: "MOVIES_FETCH_SUCCESS",
+                        payload: result,
                     });
+                });
             });
         // } catch {
         //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
@@ -405,9 +419,9 @@ const App = () => {
 
             <div className="mb-6 pt-10 px-5">
                 <label htmlFor="large-input" className="text-center block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    Your Car's Plate
+                    Move Plate Game
                 </label>
-                <input type="text" value={input} onChange={handleInputChange} disabled={movies.isLoading} id="large-input" className="block w-full p-4 text-gray-900 border border-gray-300 bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"/>
+                <input type="text" value={input} onChange={handleInputChange} disabled={movies.isLoading} id="large-input" className="block w-full p-4 text-gray-900 border border-gray-300 bg-white sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"/>
             </div>
 
             <Accordion collapseAll className="px-5 mb-5 mx-5 border border-gray-300 bg-white shadow-lg rounded-none">
@@ -438,6 +452,7 @@ const App = () => {
         {movies.isLoading ? (
             <div className="flex flex-col items-center">
                 Loading... <Spinner aria-label="Default status example" />
+                { movies.loadMessage }
             </div>
         ) : (
             <div className="flex flex-col items-center justify-center px-5 mb-5">
@@ -513,7 +528,7 @@ const App = () => {
 
                 <div>
                     {
-                        Object.entries(movies.data['movies'] || {}).map((movie, index) => {
+                        Object.entries(movies.data.movies || {}).map((movie, index) => {
                             return (
                                 <div key={index} className="mb-5 p-5 bg-white shadow-lg border border-gray-300">
                                     <div className="p-5">{movie[1][1]}</div>
