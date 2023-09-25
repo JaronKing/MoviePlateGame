@@ -192,8 +192,6 @@ const processInput = async (input, movies, movieGenres, dispatchMovies, movieDat
 
         // Search database given string
         async function searchDatabase(movies, movieData, stringCombinations) {
-            // console.log("search db");
-            // const sleep = m => new Promise(r => setTimeout(r, m));
             movieData['stats']['combinationCount'] = stringCombinations.length;
             // get genre count
             movieData['stats']['genres'] = [];
@@ -205,19 +203,25 @@ const processInput = async (input, movies, movieGenres, dispatchMovies, movieDat
             movieData['stats']['highestMovieCombinationMovie'] = [];
             movieData['stats']['highestMovieCombinationCount'] = 0;
             movieData['stats']['moviesSearched'] = 0;
-            await Promise.all(movies.map(async (movie, movieIndex) => {
+
+            let sleepCycleCount = 0;
+            const sleepCycleMax = 1000;
+            // loop through each movie that passes genre
+            for (const property in movies) {
+                // console.log(movies[property]);
+                // count total movies searched
                 movieData['stats']['moviesSearched'] ++;
-                await Promise.all(stringCombinations.map(async (string, index) => {
-                    let stringArray = string.split("");
-                    let movieTitleArray = movie[1].toLowerCase().split(" ");
+
+                // loop through each string combination to match
+                for (const stringCombination in stringCombinations) {
+
+                    let stringArray = stringCombinations[stringCombination].split("");
+                    let movieTitleArray = movies[property][1].toLowerCase().split(" ");
                     //check if string array to big, if so skip
-                    if (movieTitleArray.length < stringArray.length) {
-                        return null;
-                    }
+                    if (movieTitleArray.length < stringArray.length) break;
                     //checkk if movie title is one word, skip if so
-                    if (movieTitleArray.length < 2) {
-                        return null;
-                    }
+                    if (movieTitleArray.length < 2) break;
+                    // create a for loop to match the string in different positions of the title
                     let arrayDiference = movieTitleArray.length - stringArray.length;
                     for(let a = 0; a <= arrayDiference; a++) {
                         let wordMatchCount = 0;
@@ -229,37 +233,40 @@ const processInput = async (input, movies, movieGenres, dispatchMovies, movieDat
                             if (movieTitleArray[movieWordPosition].includes(stringArray[c])) {
                                 wordMatchCount++;
                                 if (wordMatchCount === stringArray.length) {
-                                    if (movieData['movies'][movie[0]] !== undefined) {
-                                        movieData['movies'][movie[0]]['matches'] ++;
-                                        if(movieData['movies'][movie[0]]['matchMax'] < string.length){
-                                            movieData['movies'][movie[0]]['matchMax'] = string.length;
+                                    if (movieData['movies'][property] !== undefined) {
+                                        movies[property]['matches'] ++;
+                                        if(movies[property]['matchMax'] < stringCombinations[stringCombination].length){
+                                            movieData['movies'][property]['matchMax'] = stringCombinations[stringCombination].length;
                                         }
-                                        movieData['movies'][movie[0]]['matchedString'].push(string);
+                                        movieData['movies'][property]['matchedString'].push(stringCombinations[stringCombination]);
                                     } else {
-                                        let movieToPush = movie;
+                                        let movieToPush = movies[property];
                                         movieToPush['matchedString'] = [];
                                         movieToPush['matches'] = 1;
-                                        movieToPush['matchedString'].push(string);
-                                        movieToPush['matchMax'] = string.length;
-                                        movieData['movies'][movie[0]] = movieToPush;
+                                        movieToPush['matchedString'].push(stringCombinations[stringCombination]);
+                                        movieToPush['matchMax'] = stringCombinations[stringCombination].length;
+                                        movieData['movies'][property] = movieToPush;
                                     }
                                 }
-                                await sleep(1);
                             } else {
                                 break;
                             }
-                            await sleep(1);
                         }
                     }
+
+                }
+
+                sleepCycleCount++;
+                if (sleepCycleMax === sleepCycleCount) {
                     await sleep(1);
-                    return true;
-                }));
-                await sleep(100);
-                return true;
-            }));
+                    console.log('sleep');
+                    sleepCycleCount = 0;
+                }
+            }
+
 
             //round rating
-            // console.log(movieData['stats']['genres']);
+            console.log(movieData);
             // movieData['movies'].sort(function(a, b){return parseFloat(b[1]['matches']) - parseFloat(a[1]['matches'])});
             return movieData;
         }
@@ -327,8 +334,8 @@ const processInput = async (input, movies, movieGenres, dispatchMovies, movieDat
         }
 
         dispatchMovies({ type: "MOVIES_GENERATE_STATS"});
-        await sleep(1000);
-        movieData = getMatchStats(movieData);
+        await sleep(100);
+        movieData = await getMatchStats(movieData);
 
         // console.log("here");
         // console.log(movieData);
@@ -437,7 +444,7 @@ const App = () => {
         if (plate.length < 7) return;
 
         await dispatchMovies({ type: "MOVIES_FETCH_INIT"});
-        try{
+        // try{
             await fetch("./movies.json")
             .then((res) => {
                 return res.json();
@@ -452,9 +459,9 @@ const App = () => {
                     });
                 // });
             });
-        } catch {
-            dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
-        }
+        // } catch {
+        //     dispatchMovies({ type: "MOVIES_FETCH_FAILURE" });
+        // }
     }, [plate, boolean]);
 
     React.useEffect(() => {
