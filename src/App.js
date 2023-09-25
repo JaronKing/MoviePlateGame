@@ -19,7 +19,8 @@ const moviesReducer = (state, action) => {
                 isLoading: true,
                 isError: false,
                 isInit: true,
-                data: { ...dataStub }
+                data: { ...dataStub },
+                loadMessage: 'Initiating search...',
             };
         case 'MOVIES_FETCH_SUCCESS':
             return {
@@ -28,6 +29,7 @@ const moviesReducer = (state, action) => {
                 isError: false,
                 isInit: false,
                 data: action.payload,
+                loadMessage: 'Successfully get movie list...',
             };
         case 'MOVIES_FETCH_FAILURE':
             return {
@@ -426,7 +428,7 @@ const App = () => {
 
             <Accordion collapseAll className="px-5 mb-5 mx-5 border border-gray-300 bg-white shadow-lg rounded-none">
                 <Accordion.Panel>
-                    <Accordion.Title>
+                    <Accordion.Title className="bg-white hover:bg-white rounded-none border-none">
                         Genres
                     </Accordion.Title>
                     <Accordion.Content>
