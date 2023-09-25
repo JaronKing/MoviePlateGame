@@ -312,6 +312,7 @@ const processInput = async (input, movies, movieGenres, dispatchMovies, movieDat
                         movieData['stats']['mostMatchedGenreMax'] = movieData['stats']['genres'][genre];
                         movieData['stats']['mostMatchedGenre'] = genre;
                     }
+                    return genre;
                 });
 
                 //movie count
