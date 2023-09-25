@@ -1,5 +1,6 @@
 import './App.css';
 import * as React from "react"
+import { Accordion } from 'flowbite-react';
 
 const moviesReducer = (state, action) => {
     switch (action.type) {
@@ -383,38 +384,43 @@ const App = () => {
     // }, [input]);
 
     return (
-    <main>
+    <main className="bg-gray-100">
         <div className="container max-w-xl m-auto">
 
             <div className="mb-6 pt-10 px-5">
                 <label htmlFor="large-input" className="text-center block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                     Your Car's Plate
                 </label>
-                <input type="text" value={input} onChange={handleInputChange} disabled={movies.isLoading} id="large-input" className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"/>
+                <input type="text" value={input} onChange={handleInputChange} disabled={movies.isLoading} id="large-input" className="block w-full p-4 text-gray-900 border border-gray-300 bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"/>
             </div>
-
-            <div className="px-5 pt-5 pb-5 mb-5 mx-5 bg-gray-100 border border-gray-300 rounded-lg">
-                <div>Genre</div>
-                <div className="md:columns-3 columns-2">
-
-                    {
-                        Object.keys(genres).map((genre, index) => {
-                            // console.log(genre);
-                            // if(parseFloat(genre) === 1) return true;
-                            return (
-                                <label key={genre} htmlFor={genre} className="relative m-3 inline-flex items-center cursor-pointer">
-                                    <input id={genre} name={genre} onChange={(e) => handleGenreChange(e)} value={genre} checked={!genres[genre]} type="checkbox" className="sr-only peer"/>
-                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                    <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{genre}</span>
-                                </label>
-                            )
-                        })
-                    }
-                </div>
-            </div>
+{/*collapseAll*/}
+            <Accordion>
+                <Accordion.Panel className="px-5 pt-5 pb-5 mb-5 mx-5 border border-gray-300 bg-white shadow-lg">
+                    <Accordion.Title>
+                        Genres
+                    </Accordion.Title>
+                    <Accordion.Content>
+                        <div className="px-5 pt-5 pb-5 mb-5 mx-5 border border-gray-300 bg-white shadow-lg md:columns-3 columns-2">
+                            {
+                                Object.keys(genres).map((genre, index) => {
+                                    // console.log(genre);
+                                    // if(parseFloat(genre) === 1) return true;
+                                    return (
+                                        <label key={genre} htmlFor={genre} className="relative m-3 inline-flex items-center cursor-pointer">
+                                            <input id={genre} name={genre} onChange={(e) => handleGenreChange(e)} value={genre} checked={!genres[genre]} type="checkbox" className="sr-only peer"/>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                            <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{genre}</span>
+                                        </label>
+                                    )
+                                })
+                            }
+                        </div>
+                    </Accordion.Content>
+                </Accordion.Panel>
+            </Accordion>
 
             <div className="flex flex-col items-center justify-center px-5 mb-5">
-                <button type="submit" onClick={handleSeachSubmit} disabled={movies.isLoading} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                <button type="submit" onClick={handleSeachSubmit} disabled={movies.isLoading} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium shadow-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
             </div>
         {movies.isLoading && (
             <div>Loading...</div>
@@ -426,11 +432,11 @@ const App = () => {
             <p></p>
         ) : (
             <div className="mx-5">
-                <div className="grid grid-cols-7 text-center content-start bg-gray-100 pt-5 pb-5 mb-5 border border-gray-300 rounded-lg uppercase">
+                <div className="grid grid-cols-7 text-center content-start bg-white pt-5 pb-5 mb-5 border border-gray-300 uppercase shadow-lg">
                     {
                         Object.entries(movies.data.inputCharacterMap).map((characterPosition, index) => {
                             return (
-                                <div key={index} className="bg-gray-100">
+                                <div key={index} className="bg-white">
                                 {
                                     Object.entries(characterPosition).map(([index2, characters], mix) => {
                                         if (characters === 0) return false;
@@ -441,7 +447,7 @@ const App = () => {
                                                 if (index3 === 0) return true;
                                                 let characterKey = `${index3}_${character}`
                                                 return (
-                                                    <div key={characterKey} className="bg-gray-100">{character}</div>
+                                                    <div key={characterKey} className="bg-white">{character}</div>
                                                 );
                                             })
                                         );
@@ -454,8 +460,8 @@ const App = () => {
                 </div>
 
 
-                <div className="flex-row grid grid-cols-2 p-5 bg-gray-100 border border-gray-300 rounded-lg">
-                    <div className="border border-gray-200 rounded-lg">
+                <div className="flex-row grid grid-cols-2 p-5 bg-white border border-gray-300 shadow-lg">
+                    <div className="border border-gray-200">
                         Movies Matched: { movies.data.stats.movieCount }
                     </div>
                     <div className="border border-gray-200">
@@ -490,7 +496,7 @@ const App = () => {
                     {
                         Object.entries(movies.data['movies']).map((movie, index) => {
                             return (
-                                <div key={index} className="mb-5 p-5 bg-gray-100  border border-gray-300 rounded-lg">
+                                <div key={index} className="mb-5 p-5 bg-white shadow-lg border border-gray-300">
                                     <div className="p-5">{movie[1][1]}</div>
                                     <div className="px-5">Genre: {movie[1][2]}</div>
                                     <div className="px-5">Rating: {movie[1][3]}</div>
