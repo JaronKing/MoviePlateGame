@@ -1,6 +1,11 @@
 import './App.css';
 import * as React from "react"
-import { Accordion, Spinner } from 'flowbite-react';
+import { Spinner } from 'flowbite-react';
+
+import GenresOptions from './components/GenresOptions';
+import CombinationDisplay from './components/CombinationDisplay';
+import SearchStats from './components/SearchStats';
+import SearchResults from './components/SearchResults';
 
 const moviesReducer = (state, action) => {
     switch (action.type) {
@@ -419,8 +424,6 @@ const App = () => {
     const [ plate, setPlate ] = React.useState('');
     const [ genres, setGenres ] = React.useState(genresStub);
     const [ boolean, setBoolean ] = React.useState([]);
-    const [ displayCombination, setDisplayCombination ] = React.useState([]);
-    const [ exampleCombination, setExampleCombination ] = React.useState();
 
     const handleInputChange = (event) => {
         let string = event.target.value.toUpperCase();
@@ -433,19 +436,7 @@ const App = () => {
         setPlate(input);
     }
 
-    const handleGenreChange = (event) => {
-        // console.log(event.target.checked);
-        // console.log(event.target.defaultValue);
-        // console.log(!(event.target.checked != false));
-        let genreValue = [];
-        genreValue[event.target.defaultValue] = !(event.target.checked !== false);
-        let booleanValue = {
-            ...genres,
-            ...genreValue,
-        }
-        console.log(booleanValue);
-        setGenres(booleanValue);
-    }
+
     // const edges = [];
     const handleFetchMovies = React.useCallback(async () => {
         if (!plate) return;
@@ -477,45 +468,6 @@ const App = () => {
     // React.useEffect(() => {
     //     dispatchMovies({ type: 'PAGE_INIT'});
     // }, [input]);
-
-    React.useEffect(() => {
-        const interval = setInterval(() => {
-            if (!movies.isInit) {
-                let filteredLength = movies['data']['stats']['filteredStringCombination'].length;
-                let randomIndex = Math.floor(Math.random() * filteredLength);
-                let selectedCombination = movies['data']['stats']['filteredStringCombination'][randomIndex];
-                setExampleCombination(selectedCombination);
-
-                let characterMap = movies['data']['displayCharacterMap'];
-                let stringDifference = characterMap.length - selectedCombination.length;
-                let combinationArray = selectedCombination.split('');
-
-                // clear previous selects
-                for (const stringArrayIndex in characterMap) {
-                    for (const character in characterMap[stringArrayIndex]) {
-                        characterMap[stringArrayIndex][character] = 0;
-                    }
-                }
-                setDisplayCombination(characterMap);
-                for (let b = 0; b <= stringDifference; b++) {
-                    for (let a = 0; a < combinationArray.length; a++) {
-                        let match = 0
-                        let offset = a + b;
-                        for (const property in characterMap[offset]) {
-                            if (combinationArray[a].toUpperCase() === property.toUpperCase()) {
-                                match = 1;
-                                characterMap[offset][property] = 1;
-                            }
-                        }
-                        if (!match) break;
-                    }
-                }
-                setDisplayCombination(movies['data']['displayCharacterMap']);
-            }
-        }, 250);
-        return () => clearInterval(interval);
-    }, [movies]);
-
     return (
     <main className="bg-white h-fit">
         <div className="container max-w-xl m-auto">
@@ -527,30 +479,7 @@ const App = () => {
                 <input type="text" value={input} onChange={handleInputChange} disabled={movies.isLoading} id="large-input" placeholder="Enter Your License Plate" className="block w-full p-4 text-gray-900 border border-gray-300 bg-white sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center shadow-lg"/>
             </div>
 
-            <Accordion collapseAll className="px-5 mb-5 mx-5 border border-gray-300 bg-white shadow-lg rounded-none">
-                <Accordion.Panel>
-                    <Accordion.Title className="bg-white hover:bg-white rounded-none border-none">
-                        Genres
-                    </Accordion.Title>
-                    <Accordion.Content>
-                        <div className="md:columns-3 columns-2">
-                            {
-                                Object.keys(genres).map((genre, index) => {
-                                    // console.log(genre);
-                                    // if(parseFloat(genre) === 1) return true;
-                                    return (
-                                        <label key={genre} htmlFor={genre} className="relative m-3 inline-flex items-center cursor-pointer">
-                                            <input id={genre} name={genre} onChange={(e) => handleGenreChange(e)} value={genre} checked={!genres[genre]} type="checkbox" className="sr-only peer"/>
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                            <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{genre}</span>
-                                        </label>
-                                    )
-                                })
-                            }
-                        </div>
-                    </Accordion.Content>
-                </Accordion.Panel>
-            </Accordion>
+            <GenresOptions genres={genres}  setGenres={setGenres}/>
 
         {movies.isLoading ? (
             <div className="flex flex-col items-center">
@@ -570,98 +499,17 @@ const App = () => {
         ) : (
             <div className="mx-5">
 
-                <div className="grid grid-cols-7 text-center content-start bg-white pt-5 pb-5 mb-5 uppercase shadow-lg border border-gray-300 ">
-                    {
-                        Object.entries(displayCombination || {}).map((characterPosition, index) => {
-                            return (
-                                <div key={index} className="bg-white">
-                                {
-                                    Object.entries(characterPosition).map(([index2, characters], mix) => {
-                                        if (characters === 0) return false;
-                                        if (parseFloat(index2) === 0) return false;
+                <CombinationDisplay movies={movies} />
 
-                                        return (
-                                            Object.entries(characters).map(([index3, character], mix2) => {
-                                                // if (parseFloat(character)) return true;
-                                                // if (index3 === 0) return true;
-                                                let characterKey = `${index3}_${character}`
-                                                return (
-                                                    <div key={characterKey} className={character ? ("bg-gray-300") : ("bg-white")}>{index3}</div>
-                                                );
-                                            })
-                                        );
-                                    })
-                                }
-                                </div>
-                            );
-                        })
-                    }
-                </div>
+                <SearchStats movies={movies} />
 
-                <div className="text-center content-start bg-white pt-5 pb-5 mb-5 uppercase shadow-lg border border-gray-300 ">
-                    { exampleCombination }
-                </div>
+                <SearchResults movies={movies} />
 
-                <div className="flex-row grid grid-cols-2 p-5 bg-white border border-gray-300 shadow-lg">
-                    <div className="">
-                        Movies Matched: { movies.data.stats.movieCount }
-
-                    </div>
-                    <div className="">
-                        Plate Combinations Matched: { movies.data.stats.combinationCount }
-                    </div>
-                    <div className="">
-                        Average Rating: { movies.data.stats.averageRating }
-                    </div>
-                    <div className="">
-                        Highest Rating: { movies.data.stats.highestRating }
-                    </div>
-                    <div className="">
-                        Most Matched Movie: { movies['data']['stats']['highestMovieCombinationMovie'][1] }
-                    </div>
-                    <div className="">
-                        <p>Most Matched Genre: { movies['data']['stats']['mostMatchedGenre'] }</p>
-                        <p>With { movies['data']['stats']['mostMatchedGenreMax'] } matched</p>
-                    </div>
-                    <div className="">
-                        <p>Plate Combinations: { movies['data']['stats']['combinationCount'] }</p>
-                    </div>
-                    <div className="">
-                        <p>Movies Searched: { movies['data']['stats']['moviesSearched'] }</p>
-                    </div>
-                </div>
-
-                <div className="flex flew-row pt-5 p-5 text-enter">
-                    Results<br/>
-                </div>
-
-                <div>
-                    {
-                        Object.entries(movies.data.movies || {}).map((movie, index) => {
-                            return (
-                                <div key={index} className="mb-5 p-5 bg-white shadow-lg border border-gray-300">
-                                    <div className="px-5">{movie[1][1]}</div>
-                                    <div className="px-5">Genre: {movie[1][2]}</div>
-                                    <div className="px-5">Rating: {movie[1][3]}</div>
-                                    <div className="px-5">Matches: {movie[1]['matches']}</div>
-                                    <div className="px-5">
-                                        <div>Matched Plate Combinations</div>
-
-                                    </div>
-                                </div>
-                            );
-                        })
-                    }
-                </div>
             </div>
             )}
         </div>
 
-
-
     </main>
-
-
     )
 }
 
