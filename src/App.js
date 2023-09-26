@@ -1,11 +1,11 @@
 import './App.css';
 import * as React from "react"
-import { Spinner } from 'flowbite-react';
 
 import GenresOptions from './components/GenresOptions';
 import CombinationDisplay from './components/CombinationDisplay';
 import SearchStats from './components/SearchStats';
 import SearchResults from './components/SearchResults';
+import Loader from './components/Loader';
 
 const moviesReducer = (state, action) => {
     switch (action.type) {
@@ -15,7 +15,6 @@ const moviesReducer = (state, action) => {
                 isLoading: false,
                 isError: false,
                 isInit: true,
-                data: { ...dataStub },
                 loadMessage: 'Searching...',
             }
         case 'MOVIES_FETCH_INIT':
@@ -24,7 +23,6 @@ const moviesReducer = (state, action) => {
                 isLoading: true,
                 isError: false,
                 isInit: true,
-                data: { ...dataStub },
                 loadMessage: 'Initiating search...',
             };
         case 'MOVIES_FETCH_SUCCESS':
@@ -354,21 +352,6 @@ const processInput = async (input, movies, movieGenres, dispatchMovies, movieDat
     return movieData;
 }
 
-const dataStub = {
-    stats: {
-        'movieCount': 0,
-        'highestMovieCombinationCount': 0,
-        'highestMovieCombinationMovie': [],
-        'highestStringMatchCount': 0,
-        'highestRating': 0,
-        'averageRating': 0,
-        'combinationCount':0,
-        'moviesSearched': 0,
-    },
-    inputCharacterMap : [],
-    movies: [],
-};
-
 const genresStub = {
     Action:false,
     Adventure:false,
@@ -482,20 +465,17 @@ const App = () => {
             <GenresOptions genres={genres}  setGenres={setGenres}/>
 
         {movies.isLoading ? (
-            <div className="flex flex-col items-center">
-                Loading... <Spinner aria-label="Default status example" />
-                { movies.loadMessage }
-            </div>
+            <Loader movies={movies} />
         ) : (
             <div className="flex flex-col items-center justify-center px-5 mb-5">
-                <button type="submit" onClick={handleSeachSubmit} disabled={movies.isLoading} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium shadow-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 shadow-lg">Submit</button>
+                <button type="submit" onClick={handleSeachSubmit} disabled={movies.isLoading} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium shadow-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 shadow-lg">Search</button>
             </div>
         )}
         {movies.isError && (
             <div>Error...</div>
         )}
         {movies.isInit ? (
-            <p></p>
+            <p>Search for a movie that matches combinations of letters found on your plate. </p>
         ) : (
             <div className="mx-5">
 

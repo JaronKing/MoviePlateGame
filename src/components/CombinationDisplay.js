@@ -4,43 +4,48 @@ const CombinationDisplay = ({ movies }) => {
     const [ displayCombination, setDisplayCombination ] = React.useState([]);
     const [ exampleCombination, setExampleCombination ] = React.useState();
 
+    const loadDisplay = React.useCallback(() => {
+        let filteredLength = movies['data']['stats']['filteredStringCombination'].length;
+        let randomIndex = Math.floor(Math.random() * filteredLength);
+        let selectedCombination = movies['data']['stats']['filteredStringCombination'][randomIndex];
+        setExampleCombination(selectedCombination);
+
+        let characterMap = movies['data']['displayCharacterMap'];
+        let stringDifference = characterMap.length - selectedCombination.length;
+        let combinationArray = selectedCombination.split('');
+
+        // clear previous selects
+        for (const stringArrayIndex in characterMap) {
+            for (const character in characterMap[stringArrayIndex]) {
+                characterMap[stringArrayIndex][character] = 0;
+            }
+        }
+        setDisplayCombination(characterMap);
+        for (let b = 0; b <= stringDifference; b++) {
+            for (let a = 0; a < combinationArray.length; a++) {
+                let match = 0
+                let offset = a + b;
+                for (const property in characterMap[offset]) {
+                    if (combinationArray[a].toUpperCase() === property.toUpperCase()) {
+                        match = 1;
+                        characterMap[offset][property] = 1;
+                    }
+                }
+                if (!match) break;
+            }
+        }
+        setDisplayCombination(movies['data']['displayCharacterMap']);
+    },[movies]);
+
     React.useEffect(() => {
+        loadDisplay();
         const interval = setInterval(() => {
             if (!movies.isInit) {
-                let filteredLength = movies['data']['stats']['filteredStringCombination'].length;
-                let randomIndex = Math.floor(Math.random() * filteredLength);
-                let selectedCombination = movies['data']['stats']['filteredStringCombination'][randomIndex];
-                setExampleCombination(selectedCombination);
-
-                let characterMap = movies['data']['displayCharacterMap'];
-                let stringDifference = characterMap.length - selectedCombination.length;
-                let combinationArray = selectedCombination.split('');
-
-                // clear previous selects
-                for (const stringArrayIndex in characterMap) {
-                    for (const character in characterMap[stringArrayIndex]) {
-                        characterMap[stringArrayIndex][character] = 0;
-                    }
-                }
-                setDisplayCombination(characterMap);
-                for (let b = 0; b <= stringDifference; b++) {
-                    for (let a = 0; a < combinationArray.length; a++) {
-                        let match = 0
-                        let offset = a + b;
-                        for (const property in characterMap[offset]) {
-                            if (combinationArray[a].toUpperCase() === property.toUpperCase()) {
-                                match = 1;
-                                characterMap[offset][property] = 1;
-                            }
-                        }
-                        if (!match) break;
-                    }
-                }
-                setDisplayCombination(movies['data']['displayCharacterMap']);
+                loadDisplay();
             }
         }, 250);
         return () => clearInterval(interval);
-    }, [movies]);
+    }, [movies, loadDisplay]);
 
     return (
         <>
