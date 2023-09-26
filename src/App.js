@@ -502,7 +502,7 @@ const App = () => {
                         let match = 0
                         let offset = a + b;
                         for (const property in characterMap[offset]) {
-                            if (combinationArray[a].toUpperCase() == property.toUpperCase()) {
+                            if (combinationArray[a].toUpperCase() === property.toUpperCase()) {
                                 match = 1;
                                 characterMap[offset][property] = 1;
                             }
