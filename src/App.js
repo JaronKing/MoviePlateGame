@@ -41,7 +41,7 @@ const moviesReducer = (state, action) => {
         case 'MOVIES_GENERATED_STRINGS':
             return {
                 ...state,
-                loadMessage: 'Generated Plate Combinations',
+                loadMessage: 'Generate String combinations from Plate',
             };
         case 'MOVIES_GENERATED_SEARCHING':
             return {
@@ -79,53 +79,72 @@ const numberMap = {
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 
 const processCombinationsOfPlate = async (input, movies, movieGenres, dispatchMovies) => {
-    // return new Promise((resolve) => {
-        let movieData = [];
-        movieData['movies'] = [];
-        movieData['stats'] = [];
+    let movieData = [];
+    movieData['movies'] = [];
+    movieData['stats'] = [];
 
-        dispatchMovies({ type: "MOVIES_GENERATED_STRINGS"});
-        await sleep(100);
-        // console.log(stringCombinations);
-        // console.log(movieData);
-        //Create an array matrix of characters based on input (numbers into word)
-        let inputCharacterMap = [];
-        for (let i = 0; i < input.length; i++) {
-            let char = input.charAt(i);
+    dispatchMovies({ type: "MOVIES_GENERATED_STRINGS"});
+    await sleep(100);
+    //Create an array matrix of characters based on input (numbers into word)
+    let inputCharacterMap = [];
+    for (let i = 0; i < input.length; i++) {
+        let char = input.charAt(i);
+        // inputCharacterMap[i] = [];
+        let varToPush = [];
+        if(isNaN(char)) {
+            varToPush.push(char.toLowerCase());
+        } else {
+            let numberString = numberMap[char];
             // inputCharacterMap[i] = [];
-            let varToPush = [];
-            if(isNaN(char)) {
-                varToPush.push(char.toLowerCase());
-            } else {
-                let numberString = numberMap[char];
-                // inputCharacterMap[i] = [];
-                for (let a = 0; a < numberString.length; a++) {
-                    let numberChar = numberString.charAt(a);
-                    varToPush.push(numberChar);
-                }
+            for (let a = 0; a < numberString.length; a++) {
+                let numberChar = numberString.charAt(a);
+                varToPush.push(numberChar);
             }
-            inputCharacterMap.push(varToPush);
         }
-        // console.log(inputCharacterMap);
-        await sleep(100);
-        let possibleStrings = (characterMap) => {
-            let combinations = [];
-            for (let b = 0; b < characterMap[0].length; b++){
-                for (let c = 0; c < characterMap[1].length; c++) {
-                    for (let d = 0; d < characterMap[2].length; d++) {
-                        for (let e = 0; e < characterMap[3].length; e++) {
-                            for (let f = 0; f < characterMap[4].length; f++) {
-                                for (let g = 0; g < characterMap[5].length; g++) {
-                                    for (let h = 0; h < characterMap[6].length; h++) {
-                                        let character0 = characterMap[0][b];
-                                        let character1 = characterMap[1][c];
-                                        let character2 = characterMap[2][d];
-                                        let character3 = characterMap[3][e];
-                                        let character4 = characterMap[4][f];
-                                        let character5 = characterMap[5][g];
-                                        let character6 = characterMap[6][h];
-                                        let newString = character0 + character1 + character2 + character3 + character4 + character5 + character6;
-                                        combinations.push(newString);
+        inputCharacterMap.push(varToPush);
+    }
+
+    let displayCharacterMap = [];
+    for (let i = 0; i < input.length; i++) {
+        let char = input.charAt(i);
+        let numberChar = [];
+        if(isNaN(char)) {
+            numberChar[char.toLowerCase()] = 0;
+        } else {
+            let numberString = numberMap[char];
+            for (let a = 0; a < numberString.length; a++) {
+                numberChar[numberString.charAt(a)] = 0;
+            }
+        }
+        displayCharacterMap.push(numberChar);
+    }
+    movieData['displayCharacterMap'] = displayCharacterMap;
+
+    await sleep(100);
+    let possibleStringsCount = 0;
+    let possibleStringsCountMax = 100;
+    let possibleStrings = async (characterMap) => {
+        let combinations = [];
+        for (let b = 0; b < characterMap[0].length; b++){
+            for (let c = 0; c < characterMap[1].length; c++) {
+                for (let d = 0; d < characterMap[2].length; d++) {
+                    for (let e = 0; e < characterMap[3].length; e++) {
+                        for (let f = 0; f < characterMap[4].length; f++) {
+                            for (let g = 0; g < characterMap[5].length; g++) {
+                                for (let h = 0; h < characterMap[6].length; h++) {
+                                    let character0 = characterMap[0][b];
+                                    let character1 = characterMap[1][c];
+                                    let character2 = characterMap[2][d];
+                                    let character3 = characterMap[3][e];
+                                    let character4 = characterMap[4][f];
+                                    let character5 = characterMap[5][g];
+                                    let character6 = characterMap[6][h];
+                                    let newString = character0 + character1 + character2 + character3 + character4 + character5 + character6;
+                                    combinations.push(newString);
+                                    possibleStringsCount ++;
+                                    if (possibleStringsCount === possibleStringsCountMax) {
+                                        await sleep(100);
+                                        possibleStringsCount = 0;
                                     }
                                 }
                             }
@@ -133,51 +152,51 @@ const processCombinationsOfPlate = async (input, movies, movieGenres, dispatchMo
                     }
                 }
             }
-            return combinations;
         }
-        movieData['inputCharacterMap'] = inputCharacterMap;
-        let possibleStringCombinations = possibleStrings(inputCharacterMap);
+        return combinations;
+    }
+    movieData['inputCharacterMap'] = inputCharacterMap;
+    let possibleStringCombinations = await possibleStrings(inputCharacterMap);
 
-        let possibleCombinations = (combinations, str) => {
-            for (let i = 0; i < str.length; i++) {
-                for (let j = i + 1; j < str.length + 1; j++) {
-                    combinations.push(str.slice(i, j));
-                }
-            }
-            return combinations;
-        }
-
-        let stringCombinations = [];
-        for (let a = 0; a < possibleStringCombinations.length; a++) {
-            stringCombinations = possibleCombinations(stringCombinations, possibleStringCombinations[a]);
-        }
-
-        let countBefore = stringCombinations.length;
-        //clear duplicate stringCombinations and remove single string
-        for (let a = 0; a < stringCombinations.length; a++) {
-            for (let b = 0; b < stringCombinations.length; b++) {
-                if (a !== b) {
-                    if (stringCombinations[a] === stringCombinations[b]) {
-                        stringCombinations.splice(b,1);
-                    }
-                }
+    let possibleCombinations = (combinations, str) => {
+        for (let i = 0; i < str.length; i++) {
+            for (let j = i + 1; j < str.length + 1; j++) {
+                combinations.push(str.slice(i, j));
             }
         }
-        let countAfter = stringCombinations.length;
-        console.log(`Before: ${countBefore}  After:${countAfter}`);
+        return combinations;
+    }
 
-        //clear single letter strings
-        function combinationStringMinLength(string) {
-            return string.length > 3;
+    let stringCombinations = [];
+    for (let a = 0; a < possibleStringCombinations.length; a++) {
+        stringCombinations = possibleCombinations(stringCombinations, possibleStringCombinations[a]);
+    }
+
+    let countBefore = stringCombinations.length;
+    //clear duplicate stringCombinations and remove single string
+    for (let a = 0; a < stringCombinations.length; a++) {
+        for (let b = 0; b < stringCombinations.length; b++) {
+            if (a !== b) {
+                if (stringCombinations[a] === stringCombinations[b]) {
+                    stringCombinations.splice(b,1);
+                }
+            }
         }
-        let filteredStringCombination = stringCombinations.filter(combinationStringMinLength);
-        let combinationCount = filteredStringCombination.length;
-        movieData['stats']['combinationCount'] = combinationCount;
-        console.log(`1Before: ${countAfter}  After:${combinationCount}`);
-        movieData['stats']['filteredStringCombination'] = filteredStringCombination;
-        await sleep(100);
-        return movieData;
-    // })
+    }
+    let countAfter = stringCombinations.length;
+    console.log(`Before: ${countBefore}  After:${countAfter}`);
+
+    //clear single letter strings
+    function combinationStringMinLength(string) {
+        return string.length > 3;
+    }
+    let filteredStringCombination = stringCombinations.filter(combinationStringMinLength);
+    let combinationCount = filteredStringCombination.length;
+    movieData['stats']['combinationCount'] = combinationCount;
+    console.log(`1Before: ${countAfter}  After:${combinationCount}`);
+    movieData['stats']['filteredStringCombination'] = filteredStringCombination;
+    await sleep(100);
+    return movieData;
 }
 
 const processInput = async (input, movies, movieGenres, dispatchMovies, movieData) => {
@@ -250,7 +269,6 @@ const processInput = async (input, movies, movieGenres, dispatchMovies, movieDat
             sleepCycleCount++;
             if (sleepCycleMax === sleepCycleCount) {
                 await sleep(1);
-                console.log('sleep');
                 sleepCycleCount = 0;
             }
         }
@@ -388,6 +406,7 @@ const App = () => {
                     'moviesSearched': 0,
                 },
                 inputCharacterMap : [],
+                displayCharacterMap: [],
                 movies: [],
             },
             isLoading: false,
@@ -396,10 +415,12 @@ const App = () => {
         },
     );
 
-    const [ input, setInput ] = React.useState('');
+    const [ input, setInput ] = React.useState('5znw315');
     const [ plate, setPlate ] = React.useState('');
     const [ genres, setGenres ] = React.useState(genresStub);
     const [ boolean, setBoolean ] = React.useState([]);
+    const [ displayCombination, setDisplayCombination ] = React.useState([]);
+    const [ exampleCombination, setExampleCombination ] = React.useState();
 
     const handleInputChange = (event) => {
         let string = event.target.value.toUpperCase();
@@ -457,6 +478,44 @@ const App = () => {
     //     dispatchMovies({ type: 'PAGE_INIT'});
     // }, [input]);
 
+    React.useEffect(() => {
+        const interval = setInterval(() => {
+            if (!movies.isInit) {
+                let filteredLength = movies['data']['stats']['filteredStringCombination'].length;
+                let randomIndex = Math.floor(Math.random() * filteredLength);
+                let selectedCombination = movies['data']['stats']['filteredStringCombination'][randomIndex];
+                setExampleCombination(selectedCombination);
+
+                let characterMap = movies['data']['displayCharacterMap'];
+                let stringDifference = characterMap.length - selectedCombination.length;
+                let combinationArray = selectedCombination.split('');
+
+                // clear previous selects
+                for (const stringArrayIndex in characterMap) {
+                    for (const character in characterMap[stringArrayIndex]) {
+                        characterMap[stringArrayIndex][character] = 0;
+                    }
+                }
+                setDisplayCombination(characterMap);
+                for (let b = 0; b <= stringDifference; b++) {
+                    for (let a = 0; a < combinationArray.length; a++) {
+                        let match = 0
+                        let offset = a + b;
+                        for (const property in characterMap[offset]) {
+                            if (combinationArray[a].toUpperCase() == property.toUpperCase()) {
+                                match = 1;
+                                characterMap[offset][property] = 1;
+                            }
+                        }
+                        if (!match) break;
+                    }
+                }
+                setDisplayCombination(movies['data']['displayCharacterMap']);
+            }
+        }, 250);
+        return () => clearInterval(interval);
+    }, [movies]);
+
     return (
     <main className="bg-white h-fit">
         <div className="container max-w-xl m-auto">
@@ -510,22 +569,24 @@ const App = () => {
             <p></p>
         ) : (
             <div className="mx-5">
+
                 <div className="grid grid-cols-7 text-center content-start bg-white pt-5 pb-5 mb-5 uppercase shadow-lg border border-gray-300 ">
                     {
-                        Object.entries(movies.data.inputCharacterMap || {}).map((characterPosition, index) => {
+                        Object.entries(displayCombination || {}).map((characterPosition, index) => {
                             return (
                                 <div key={index} className="bg-white">
                                 {
                                     Object.entries(characterPosition).map(([index2, characters], mix) => {
                                         if (characters === 0) return false;
                                         if (parseFloat(index2) === 0) return false;
+
                                         return (
                                             Object.entries(characters).map(([index3, character], mix2) => {
-                                                if (parseFloat(character)) return true;
-                                                if (index3 === 0) return true;
+                                                // if (parseFloat(character)) return true;
+                                                // if (index3 === 0) return true;
                                                 let characterKey = `${index3}_${character}`
                                                 return (
-                                                    <div key={characterKey} className="bg-white">{character}</div>
+                                                    <div key={characterKey} className={character ? ("bg-gray-300") : ("bg-white")}>{index3}</div>
                                                 );
                                             })
                                         );
@@ -535,6 +596,10 @@ const App = () => {
                             );
                         })
                     }
+                </div>
+
+                <div className="text-center content-start bg-white pt-5 pb-5 mb-5 uppercase shadow-lg border border-gray-300 ">
+                    { exampleCombination }
                 </div>
 
                 <div className="flex-row grid grid-cols-2 p-5 bg-white border border-gray-300 shadow-lg">
