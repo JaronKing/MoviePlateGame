@@ -1,8 +1,28 @@
 import * as React from "react"
 
+import { Transition } from 'react-transition-group';
+import { useRef } from 'react';
+
+const duration = 500;
+
+const defaultStyle = {
+    border: `2px solid green`,
+    backgroundColor: `lightGreen`,
+    transition: `opacity ${duration}ms ease-in-out`,
+    opacity: .2,
+}
+
+const transitionStyles = {
+    entering: { opacity: 1 },
+    entered:  { opacity: 1 },
+    exiting:  { opacity:.2 },
+    exited:   { opacity:.2 },
+};
+
 const CombinationDisplay = ({ movies }) => {
     const [ displayCombination, setDisplayCombination ] = React.useState([]);
     const [ exampleCombination, setExampleCombination ] = React.useState();
+    const nodeRef = useRef(null);
 
     const loadDisplay = React.useCallback(() => {
         let filteredLength = movies['data']['stats']['filteredStringCombination'].length;
@@ -43,13 +63,13 @@ const CombinationDisplay = ({ movies }) => {
             if (!movies.isInit) {
                 loadDisplay();
             }
-        }, 250);
+        }, 1000);
         return () => clearInterval(interval);
     }, [movies, loadDisplay]);
 
     return (
         <>
-            <div className="grid grid-cols-7 text-center content-start bg-white pt-5 pb-5 mb-5 uppercase shadow-lg border border-gray-300 ">
+            <div className="grid grid-cols-7 text-center content-start bg-white pt-5 pb-5 mb-5 px-5 uppercase shadow-lg border border-gray-300 ">
                 {
                     Object.entries(displayCombination || {}).map((characterPosition, index) => {
                         return (
@@ -65,7 +85,16 @@ const CombinationDisplay = ({ movies }) => {
                                             // if (index3 === 0) return true;
                                             let characterKey = `${index3}_${character}`
                                             return (
-                                                <div key={characterKey} className={character ? ("bg-gray-300") : ("bg-white")}>{index3}</div>
+                                                <Transition nodeRef={nodeRef} in={character} timeout={duration}>
+                                                  {state => (
+                                                    <div ref={nodeRef} style={{
+                                                      ...defaultStyle,
+                                                      ...transitionStyles[state]
+                                                    }}>
+                                                      {index3}
+                                                    </div>
+                                                  )}
+                                                </Transition>
                                             );
                                         })
                                     );
