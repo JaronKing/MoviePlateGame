@@ -47,7 +47,7 @@ const CombinationDisplay = ({ movies }) => {
                 let offset = a + b;
                 for (const property in characterMap[offset]) {
                     if (combinationArray[a].toUpperCase() === property.toUpperCase()) {
-                        match = 1;
+                        match++;
                         characterMap[offset][property] = 1;
                     }
                 }
