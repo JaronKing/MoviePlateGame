@@ -15,8 +15,8 @@ const defaultStyle = {
 const transitionStyles = {
     entering: { opacity: 1 },
     entered:  { opacity: 1 },
-    exiting:  { opacity:.2, backgroundColor: `light-green`, },
-    exited:   { opacity:.2, backgroundColor: `light-green`, },
+    exiting:  { opacity:.2, backgroundColor: `lightGreen`, },
+    exited:   { opacity:.2, backgroundColor: `lightGreen`, },
 };
 
 const CombinationDisplay = ({ movies }) => {
