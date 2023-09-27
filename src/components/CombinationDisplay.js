@@ -79,17 +79,20 @@ const CombinationDisplay = ({ movies }) => {
                                     if (parseFloat(index2) === 0) return false;
                                     return (
                                         Object.entries(characters).map(([index3, character], mix2) => {
+                                            // let id = `${index3}${character}`;
                                             return (
-                                                <Transition nodeRef={nodeRef} in={character} timeout={duration}>
-                                                  {state => (
-                                                    <div ref={nodeRef} style={{
-                                                      ...defaultStyle,
-                                                      ...transitionStyles[state]
-                                                    }}>
-                                                      {index3}
-                                                    </div>
-                                                  )}
-                                                </Transition>
+                                                // <div key={`${index3}${character}`}>
+                                                    <Transition nodeRef={nodeRef} in={character} timeout={duration}>
+                                                      {state => (
+                                                        <div ref={nodeRef} style={{
+                                                          ...defaultStyle,
+                                                          ...transitionStyles[state]
+                                                        }}>
+                                                          {index3}
+                                                        </div>
+                                                      )}
+                                                    </Transition>
+                                                // </div>
                                             );
                                         })
                                     );
