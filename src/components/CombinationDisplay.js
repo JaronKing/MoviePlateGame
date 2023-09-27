@@ -37,7 +37,7 @@ const CombinationDisplay = ({ movies }) => {
         // clear previous selects
         for (const stringArrayIndex in characterMap) {
             for (const character in characterMap[stringArrayIndex]) {
-                characterMap[stringArrayIndex][character] = 0;
+                characterMap[stringArrayIndex][character] = false;
             }
         }
         setDisplayCombination(characterMap);
@@ -48,7 +48,7 @@ const CombinationDisplay = ({ movies }) => {
                 for (const property in characterMap[offset]) {
                     if (combinationArray[a].toUpperCase() === property.toUpperCase()) {
                         match++;
-                        characterMap[offset][property] = 1;
+                        characterMap[offset][property] = true;
                     }
                 }
                 if (!match) break;
@@ -79,20 +79,17 @@ const CombinationDisplay = ({ movies }) => {
                                     if (parseFloat(index2) === 0) return false;
                                     return (
                                         Object.entries(characters).map(([index3, character], mix2) => {
-                                            // let id = `${index3}${character}`;
                                             return (
-                                                // <div key={`${index3}${character}`}>
-                                                    <Transition nodeRef={nodeRef} in={character} timeout={duration}>
-                                                      {state => (
-                                                        <div ref={nodeRef} style={{
-                                                          ...defaultStyle,
-                                                          ...transitionStyles[state]
-                                                        }}>
-                                                          {index3}
-                                                        </div>
-                                                      )}
-                                                    </Transition>
-                                                // </div>
+                                                <Transition key={index3} nodeRef={nodeRef} in={character} timeout={duration}>
+                                                  {state => (
+                                                    <div ref={nodeRef} style={{
+                                                      ...defaultStyle,
+                                                      ...transitionStyles[state]
+                                                    }}>
+                                                      {index3}
+                                                    </div>
+                                                  )}
+                                                </Transition>
                                             );
                                         })
                                     );
