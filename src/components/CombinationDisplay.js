@@ -6,7 +6,7 @@ import { useRef } from 'react';
 const duration = 500;
 
 const defaultStyle = {
-    border: `2px solid green`,
+    border: `1px solid green`,
     backgroundColor: `lightGreen`,
     transition: `opacity ${duration}ms ease-in-out`,
     opacity: .2,
@@ -15,8 +15,8 @@ const defaultStyle = {
 const transitionStyles = {
     entering: { opacity: 1 },
     entered:  { opacity: 1 },
-    exiting:  { opacity:.2 },
-    exited:   { opacity:.2 },
+    exiting:  { opacity:.2, backgroundColor: `light-green`, },
+    exited:   { opacity:.2, backgroundColor: `light-green`, },
 };
 
 const CombinationDisplay = ({ movies }) => {
@@ -76,14 +76,9 @@ const CombinationDisplay = ({ movies }) => {
                             <div key={index} className="bg-white">
                             {
                                 Object.entries(characterPosition).map(([index2, characters], mix) => {
-                                    if (characters === 0) return false;
                                     if (parseFloat(index2) === 0) return false;
-
                                     return (
                                         Object.entries(characters).map(([index3, character], mix2) => {
-                                            // if (parseFloat(character)) return true;
-                                            // if (index3 === 0) return true;
-                                            let characterKey = `${index3}_${character}`
                                             return (
                                                 <Transition nodeRef={nodeRef} in={character} timeout={duration}>
                                                   {state => (
